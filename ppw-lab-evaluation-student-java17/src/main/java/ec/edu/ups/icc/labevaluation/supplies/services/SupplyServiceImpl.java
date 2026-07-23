@@ -26,7 +26,7 @@ public class SupplyServiceImpl implements SupplyService {
     @Transactional
     public SupplyResponseDto create(CreateSupplyDto dto) {
         if (repository.existsByNameIgnoreCaseAndDeletedFalse(dto.name())) {
-            throw new SupplyConflictException("Supply name already exists");
+            throw new SupplyConflictException("Supply name already registered");
         }
         SupplyEntity entity = new SupplyEntity();
         entity.setName(dto.name());
@@ -52,5 +52,18 @@ public class SupplyServiceImpl implements SupplyService {
             .orElseThrow(() -> new NotFoundException("SUPPLY_NOT_FOUND", "Supply not found"));
         entity.setQuantity(dto.quantity());
         return SupplyMapper.toResponse(repository.save(entity));
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long id) {
+        SupplyEntity entity = repository.findByIdAndDeletedFalse(id)
+            .orElseThrow(() -> new NotFoundException("SUPPLY_NOT_FOUND", "Supply not found"));
+        if (entity.getQuantity() != 0) {
+            throw new SupplyConflictException("Supply cannot be deleted while quantity is greater than zero");
+        }
+        entity.setDeleted(true);
+        entity.setActive(false);
+        repository.save(entity);
     }
 }

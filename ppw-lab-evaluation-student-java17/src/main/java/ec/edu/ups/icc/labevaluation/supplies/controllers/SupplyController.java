@@ -23,7 +23,7 @@ public class SupplyController {
     }
 
     @PostMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('ADMIN','COORDINATOR')")
     public ResponseEntity<SupplyResponseDto> create(@Valid @RequestBody CreateSupplyDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(dto));
     }
@@ -35,8 +35,15 @@ public class SupplyController {
     }
 
     @PatchMapping("/{id}/quantity")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('ADMIN','COORDINATOR')")
     public SupplyResponseDto updateQuantity(@PathVariable Long id, @Valid @RequestBody UpdateSupplyQuantityDto dto) {
         return service.updateQuantity(id, dto);
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','COORDINATOR')")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }
